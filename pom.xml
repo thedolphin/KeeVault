@@ -4,10 +4,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>ru.firm1c</groupId>
+    <groupId>com.rumyantsev</groupId>
     <artifactId>keevault</artifactId>
     <version>1.0.0</version>
-    <dependencies>
+     <dependencies>
         <dependency>
             <groupId>org.apache.derby</groupId>
             <artifactId>derby</artifactId>
@@ -22,6 +22,11 @@
             <groupId>com.eclipsesource.jaxrs</groupId>
             <artifactId>jersey-all</artifactId>
             <version>2.10.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>4.3.8.Final</version>
         </dependency>
     </dependencies>
 </project>

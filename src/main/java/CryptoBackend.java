@@ -5,12 +5,10 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.zip.CRC32;
 
-/**
- * Created by dolphin on 16.02.15.
- */
 public class CryptoBackend {
 
     public static String cryptoFamily = "AES";
@@ -18,16 +16,16 @@ public class CryptoBackend {
     public static String cryptoProvder = "BC";
     public static String cryptoHash = "SHA-256";
 
-    public static void random(byte[] text) {
-
-        Random generator = new Random();
-        generator.nextBytes(text);
+    public static void wipe(byte[] text) {
+        Arrays.fill(text, (byte) 0);
     }
 
     public static byte[] generateMasterKey() {
 
         byte[] randomPart = new byte[60];
-        CryptoBackend.random(randomPart);
+
+        Random generator = new Random();
+        generator.nextBytes(randomPart);
 
         CRC32 crc32 = new CRC32();
         crc32.update(randomPart);
@@ -40,7 +38,7 @@ public class CryptoBackend {
         return masterKey.array();
     }
 
-    public static boolean verifyUserPassword(byte[] password, byte[] encipheredMasterKey) throws NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, ShortBufferException, InvalidKeyException {
+    public static boolean verifyUserPassword(byte[] password, byte[] encipheredMasterKey) throws NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, ShortBufferException, InvalidKeyException, NoSuchProviderException {
 
         byte[] masterKey = CryptoBackend.cryptMasterKey(Cipher.DECRYPT_MODE, password, encipheredMasterKey);
 
@@ -48,14 +46,14 @@ public class CryptoBackend {
         crc32.update(masterKey, 0, 60);
 
         boolean isPasswordValid = (int)crc32.getValue() == ByteBuffer.wrap(masterKey).getInt(60);
-        CryptoBackend.random(masterKey);
+        CryptoBackend.wipe(masterKey);
 
         return isPasswordValid;
     }
 
-    public static byte[] crypt(int mode, byte[] key, byte[] inputText) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, ShortBufferException, BadPaddingException, IllegalBlockSizeException {
+    public static byte[] crypt(int mode, byte[] key, byte[] inputText) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, ShortBufferException, BadPaddingException, IllegalBlockSizeException, NoSuchProviderException {
 
-        Cipher cipher = Cipher.getInstance(CryptoBackend.cryptoAlgorithm);
+        Cipher cipher = Cipher.getInstance(CryptoBackend.cryptoAlgorithm, CryptoBackend.cryptoProvder);
         cipher.init(mode, new SecretKeySpec(key, CryptoBackend.cryptoFamily));
 
         byte[] outputText = new byte[cipher.getOutputSize(inputText.length)];
@@ -65,7 +63,7 @@ public class CryptoBackend {
         return outputText;
     }
 
-    public static byte[] cryptMasterKey(int mode, byte[] password, byte[] inputMasterKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, ShortBufferException, BadPaddingException, IllegalBlockSizeException {
+    public static byte[] cryptMasterKey(int mode, byte[] password, byte[] inputMasterKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, ShortBufferException, BadPaddingException, IllegalBlockSizeException, NoSuchProviderException {
 
         MessageDigest md = MessageDigest.getInstance(CryptoBackend.cryptoHash);
         byte[] passwordMd = md.digest(password);
@@ -77,7 +75,7 @@ public class CryptoBackend {
 
         byte[] masterKey = CryptoBackend.cryptMasterKey(Cipher.DECRYPT_MODE, password, encipheredMasterKey);
         byte[] outputText = CryptoBackend.crypt(mode, masterKey, inputText);
-        CryptoBackend.random(masterKey);
+        CryptoBackend.wipe(masterKey);
 
         return outputText;
     }
